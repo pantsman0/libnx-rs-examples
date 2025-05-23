@@ -3,7 +3,7 @@
 
 extern crate alloc;
 
-extern crate nx;
+
 use nx::arm;
 use nx::diag::abort;
 use nx::diag::log::lm::LmLogger;
@@ -22,16 +22,8 @@ use nx::wait;
 use core::ops::Deref;
 use core::panic;
 
-#[no_mangle]
-pub fn initialize_heap(hbl_heap: util::PointerAndSize) -> util::PointerAndSize {
-    if hbl_heap.is_valid() {
-        hbl_heap
-    } else {
-        let heap_size: usize = 0x800000;
-        let heap_address = svc::set_heap_size(heap_size).unwrap();
-        util::PointerAndSize::new(heap_address, heap_size)
-    }
-}
+
+nx::rrt0_initialize_heap!();
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -71,7 +63,7 @@ pub fn main() -> Result<()> {
     let lib_applet_proxy_guard = applet::get_applet_proxy();
     let lib_applet_proxy = lib_applet_proxy_guard.deref().as_ref().expect("Error unwrapping applet proxy after successful init.");
     let lib_applet_creator = lib_applet_proxy.get_library_applet_creator()?;
-    let lib_applet_accessor = lib_applet_creator.create_library_applet(
+    let mut lib_applet_accessor = lib_applet_creator.create_library_applet(
         applet::AppletId::LibraryAppletPlayerSelect,
         applet::LibraryAppletMode::AllForeground,
     )?;
